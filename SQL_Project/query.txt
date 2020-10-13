@@ -1,0 +1,83 @@
+Question Set #1 Question 1
+
+WITH category_filter AS 
+( SELECT * FROM category
+ WHERE name='Animation' OR name='Children'
+OR name='Classics' OR name='Comedy'
+OR name='Family' OR name='Music'
+  )
+SELECT f.title film_title,c.name category_name,
+COUNT(*) rental_count
+FROM category_filter c
+JOIN film_category fc 
+ON c.category_id=fc.category_id
+JOIN film f
+ON f.film_id=fc.film_id
+JOIN inventory i
+ON i.film_id=f.film_id
+JOIN rental r
+ON r.inventory_id=i.inventory_id
+GROUP BY 1,2
+ORDER BY 2  
+
+------------------------------------------------------------------------------------
+Question Set #1 Question 2
+
+WITH category_filter AS 
+( SELECT * FROM category
+ WHERE name='Animation' OR name='Children'
+OR name='Classics' OR name='Comedy'
+OR name='Family' OR name='Music'
+  )
+
+SELECT f.title film_title,c.name category_name,f.rental_duration,NTILE(4) OVER (ORDER BY f.rental_duration ) 
+FROM category_filter c
+JOIN film_category fc 
+ON c.category_id=fc.category_id
+JOIN film f
+ON f.film_id=fc.film_id
+
+------------------------------------------------------------------------------------
+Question Set #2 Question 1
+
+SELECT DATE_PART('month',r.rental_date) Rental_month,DATE_PART('year',r.rental_date) Rental_year,store.store_id ,COUNT(*) Count_rental
+FROM store 
+JOIN staff 
+ON staff.store_id=store.store_id
+JOIN rental r
+ON r.staff_id =staff.staff_id
+GROUP BY 1,2,3
+ORDER BY 4 DESC
+
+
+
+------------------------------------------------------------------------------------
+
+Question Set #2 Question 2
+
+
+
+WITH sub1 AS (SELECT DATE_TRUNC('month',p.payment_date) pay_mon,c.first_name || ' ' || c.last_name fullname,
+count(*) pay_countpermon ,sum(p.amount) pay_amount
+FROM customer c
+JOIN payment p 
+ON p.customer_id=c.customer_id 
+WHERE p.payment_date 
+BETWEEN '2007-01-01' AND '2007-12-30'
+GROUP BY 2,1
+)
+,sub2 AS (
+  SELECT fullname,SUM(pay_amount)
+  FROM sub1
+  GROUP BY 1
+  ORDER BY 2 DESC
+  LIMIT 10
+)
+
+select * from sub1
+WHERE fullname IN (SELECT fullname FROM sub2)
+ORDER BY fullname 
+
+
+
+
